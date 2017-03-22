@@ -1,0 +1,23 @@
+image: golang:latest
+
+stages:
+  - test
+  - build
+  - deploy
+
+before_script:
+  - cd $CI_PROJECT_DIR
+  - export GOBIN=$GOROOT/bin
+  - chmod +x run
+  - ./run prebuild
+
+test:
+  stage: test
+  except: [tags]
+  script: [./run test]
+
+buildall:
+  stage: build
+  script: [./run buildall]
+  artifacts:
+    paths: [imgops*]

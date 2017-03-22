@@ -1,0 +1,62 @@
+#!/usr/bin/env bash
+
+export COMMIT_HASH=`git rev-parse --short @`
+export COMMIT_DATE=`git log -1 --pretty=format:%cI | sed -r -e 's/T.*//' -e 's/-//g'`
+
+function PREBUILD {
+  go get ./...
+}
+
+function BUILD {
+  echo "=== ${FUNCNAME[0]} ==="
+  echo "GOOS: $GOOS"
+  echo "GOARCH: $GOARCH"
+
+  # If $GOOS or $GOARCH is emtpy, remove dashes
+  OUT_FILE=`echo "imgops-${GOOS:-_}-${GOARCH:-_}" | sed s/-_//g`
+  OUT_FILE+=`go env GOEXE`
+  echo "Filename: $OUT_FILE"
+
+  # Use $VERSION if empty use $CI_BUILD_TAG if empty use $CI_BUILD_REF
+  VERSION=${VERSION:-${CI_BUILD_TAG:-#${CI_BUILD_REF:0:6}}}
+  echo "Version: ${VERSION:-\$VERSION is empty}"
+
+  go build -ldflags "-X main.Version=$VERSION" -o $OUT_FILE
+}
+
+function TEST {
+  echo "=== ${FUNCNAME[0]} ==="
+  TEST_URL="https://encrypted.google.com/images/branding/googlelogo/1x/googlelogo_color_272x92dp.png"
+  OUT_FILE="test.png"
+  if [[ ! -f $OUT_FILE ]]; then
+    wget -nv $TEST_URL -O $OUT_FILE
+  fi
+  go test
+}
+
+function BUILDALL {
+  echo "=== ${FUNCNAME[0]} ==="
+  OSES="windows linux darwin"
+  for OS in $OSES; do
+    export GOOS=$OS
+    export GOARCH=amd64
+    BUILD
+  done
+}
+
+function HELP {
+  echo -e "ImgOps Build Tool\nCommands: prebuild, build, test, buildall, help"
+}
+
+case $1 in
+  prebuild)
+    PREBUILD ;;
+  build)
+    BUILD ;;
+  test)
+    TEST ;;
+  buildall)
+    BUILDALL ;;
+  *)
+    HELP ;;
+esac
