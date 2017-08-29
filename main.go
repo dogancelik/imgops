@@ -4,64 +4,143 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/eiannone/keyboard"
 	"github.com/skratchdot/open-golang/open"
+	"github.com/urfave/cli"
 )
 
 import . "github.com/tj/go-debug"
 
-var cmdAction string = ""
 var debug = Debug("imgops")
-var QueryMap map[string]string = getIdMap()
+
+var authors = []cli.Author{
+	{
+		Name:  "Doğan Çelik",
+		Email: "dogancelik.com",
+	},
+}
 
 var Version string
 
-func main() {
-	fmt.Printf("ImgOps %s by Doğan Çelik (dogancelik.com)\n", Version)
+func cliSelect() string {
+	err := keyboard.Open()
+	if err != nil {
+		panic(err)
+	}
+	defer keyboard.Close()
 
-	cmdPath := ""
-	cmdAction = ""
+	fmt.Println(genSelectText())
+	ret := ""
 
-	if len(os.Args) > 1 {
-		cmdPath = os.Args[1]
-	} else {
-		fmt.Println("No file or URL")
-		os.Exit(1)
+	for {
+		char, key, err := keyboard.GetKey()
+		if err != nil {
+			panic(err)
+		} else if key == keyboard.KeyEsc {
+			break
+		}
+
+		m := getKeyToNameTargets(availableTargets)
+		target, mapOk := m[char]
+		if mapOk {
+			return target
+		} else if char == 'i' {
+			return defaultTarget
+		}
 	}
 
-	if len(os.Args) > 2 {
-		cmdAction = os.Args[2]
+	return ret
+}
+
+func cliSearch(c *cli.Context) error {
+
+	if c.NArg() == 0 {
+		return cli.NewExitError("No file or URL is given", 1)
 	}
 
-	debug("Path: %s", cmdPath)
-	debug("Action: %s", cmdAction)
-	debug("Queries: %v", QueryMap)
+	srcPath := c.Args().First()
+	targets := c.String("targets")
+
+	debug("Path: %s", srcPath)
+	debug("Targets: %s", targets)
 
 	var urls []string
 	var errUpload error
-	if isUrl(cmdPath) == true {
-		debug("Start URL upload")
-		urls, errUpload = UploadURL(cmdPath, cmdAction)
-	} else {
 
-		if _, err := os.Stat(cmdPath); os.IsNotExist(err) {
-			fmt.Println("File doesn't exist:", cmdPath)
-			os.Exit(2)
+	// Select flag
+	if c.Bool("select") {
+		targets = cliSelect()
+		if targets == "" {
+			return cli.NewExitError("Upload cancelled", 4)
 		}
-		debug("Start file upload")
-		urls, errUpload = UploadFile(cmdPath, cmdAction)
 	}
 
+	// Upload
+	if isUrl(srcPath) == true {
+		debug("Start URL upload")
+		urls, errUpload = UploadURL(srcPath, targets)
+	} else {
+		if _, err := os.Stat(srcPath); os.IsNotExist(err) {
+			return cli.NewExitError("File doesn't exist: "+srcPath, 2)
+		}
+		debug("Start file upload")
+		urls, errUpload = UploadFile(srcPath, targets)
+	}
+
+	// Upload result
 	if errUpload != nil && len(urls) == 0 {
-		fmt.Println("Error during upload:", errUpload)
-		os.Exit(3)
+		return cli.NewExitError("Error during upload: "+errUpload.Error(), 3)
 	} else {
 		if errUpload != nil {
-			fmt.Printf("Warning wrong action '%s'; will open ImgOps instead\n", cmdAction)
+			fmt.Fprintf(os.Stderr, "Unknown targets '%s', will open default page instead", targets)
 		}
 
 		for _, url := range urls {
-			open.Start(url)
+			if c.Bool("return") {
+				fmt.Println(url)
+			} else {
+				open.Start(url)
+			}
 		}
 	}
 
+	return nil
+}
+
+func cliMain(c *cli.Context) error {
+	cli.ShowAppHelp(c)
+	return nil
+}
+
+func main() {
+	app := cli.NewApp()
+	app.Name = "ImgOps CLI"
+	app.Usage = "Reverse search images"
+	app.Version = Version
+	app.Authors = authors
+	app.Action = cliMain
+	app.Commands = []cli.Command{
+		{
+			Name:    "search",
+			Aliases: []string{"a"},
+			Usage:   "Search a file or a URL",
+			Action:  cliSearch,
+			Flags: []cli.Flag{
+				cli.StringFlag{
+					Name:  "targets, t",
+					Value: defaultTarget,
+					Usage: "Target website to search at (e.g. Google)",
+				},
+				cli.BoolFlag{
+					Name:  "select, s",
+					Usage: "Show a list of targets to select from",
+				},
+				cli.BoolFlag{
+					Name:  "return, r",
+					Usage: "Output the result URL",
+				},
+			},
+		},
+	}
+	app.Run(os.Args)
 }

@@ -1,0 +1,11 @@
+package: .
+import:
+- package: github.com/PuerkitoBio/goquery
+- package: github.com/parnurzeal/gorequest
+- package: github.com/skratchdot/open-golang
+  subpackages:
+  - open
+- package: github.com/tj/go-debug
+- package: github.com/urfave/cli
+  version: v1.20.0
+- package: github.com/eiannone/keyboard

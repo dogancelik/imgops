@@ -12,19 +12,6 @@ func isUrl(targetPath string) bool {
 	return strings.Contains(targetPath, "http:") || strings.Contains(targetPath, "https:")
 }
 
-func getIdMap() map[string]string {
-	return map[string]string{
-		"google": "#t85",
-		"bing":   "#t101",
-		"tineye": "#t11",
-		"reddit": "#t97",
-		"yandex": "#t72",
-		"baidu":  "#t74",
-		"so":     "#t109",
-		"sogou":  "#t110",
-	}
-}
-
 func findHref(document, targetStr, finalUrl string) ([]string, error) {
 	doc, err := goquery.NewDocumentFromReader(strings.NewReader(document))
 	if err != nil {
@@ -54,11 +41,12 @@ func findHref(document, targetStr, finalUrl string) ([]string, error) {
 // Returns queries of found targets
 func getQueryList(s string) []string {
 	split := strings.Split(s, ",")
+	m := getNameToIdTargets(availableTargets)
 
 	found := make([]string, 0, len(split))
 	for _, val := range split {
 		key := strings.TrimSpace(val)
-		query, mapOk := QueryMap[key]
+		query, mapOk := m[key]
 		if mapOk {
 			debug("Query for '%s' is found: %s", key, query)
 			found = append(found, query)
@@ -66,4 +54,16 @@ func getQueryList(s string) []string {
 	}
 
 	return found
+}
+
+// Create a nice select list
+
+func genSelectText() string {
+	text := "Select a target:\n\n"
+	text += "  > [i]mgops\n"
+	for _, target := range availableTargets {
+		text += "  > " + strings.Replace(target.Name, string(target.Key), "["+string(target.Key)+"]", 1) + "\n"
+	}
+	text += "\n(Press ESC to cancel)"
+	return text
 }

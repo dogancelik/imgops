@@ -11,12 +11,13 @@ import (
 
 const uploadUrl string = "https://imgops.com/upload/uploadPhoto-action.asp"
 const uploadSearch string = "userUploadTempCache"
+const defaultTarget = "imgops"
 
 var defaultAction bool
 var finalUrl string
 
 func setDefaultAction(targetAction string) {
-	if targetAction != "" {
+	if targetAction != defaultTarget {
 		defaultAction = false
 	} else {
 		defaultAction = true

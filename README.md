@@ -23,7 +23,7 @@ Open up your command prompt:
 Reverse search a local file and open Google & TinEye results:
 
 ```batch
-imgops "C:\my_file.jpg" google,tineye
+imgops search "C:\my_file.jpg" -t google,tineye
 ```
 
 ### Pass a URL
@@ -31,5 +31,7 @@ imgops "C:\my_file.jpg" google,tineye
 Reverse search a URL and open Google results:
 
 ```batch
-imgops "http://example.com/foobar.jpg" google
+imgops search "http://example.com/foobar.jpg" -t google
 ```
+
+Other available flags: `-s` (select a target from list) and `-r` (output search URL)
