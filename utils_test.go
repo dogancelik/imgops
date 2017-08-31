@@ -5,8 +5,6 @@ import (
 )
 
 func TestTargetSplit(t *testing.T) {
-	QueryMap = getIdMap()
-
 	queryList := getQueryList("google")
 	if len(queryList) != 1 {
 		t.Errorf("Expected 1 query: %v", queryList)

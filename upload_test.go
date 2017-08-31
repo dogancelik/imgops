@@ -11,7 +11,7 @@ const testFile string = "test.png"
 func TestFileUpload(t *testing.T) {
 	var err error
 
-	if _, err = UploadFile(testFile, ""); err != nil {
+	if _, err = UploadFile(testFile, defaultTarget); err != nil {
 		t.Error(err)
 	}
 
@@ -27,7 +27,7 @@ func TestFileUpload(t *testing.T) {
 func TestUrlUpload(t *testing.T) {
 	var err error
 
-	if _, err = UploadURL(testUrl, ""); err != nil {
+	if _, err = UploadURL(testUrl, defaultTarget); err != nil {
 		t.Error(err)
 	}
 
