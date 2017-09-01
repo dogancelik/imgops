@@ -29,7 +29,7 @@ func cliSelect() string {
 	}
 	defer keyboard.Close()
 
-	fmt.Println(genSelectText())
+	fmt.Println(genSelectText(false))
 	ret := ""
 
 	for {
@@ -72,6 +72,16 @@ func cliSearch(c *cli.Context) error {
 		targets = cliSelect()
 		if targets == "" {
 			return cli.NewExitError("Upload cancelled", 4)
+		}
+	}
+
+	// Input flag
+	if c.Bool("input") {
+		fmt.Print(genSelectText(true))
+		fmt.Scanln(&targets)
+		targets = initialsToTargets(targets)
+		if targets == "" {
+			return cli.NewExitError("No target is specified", 5)
 		}
 	}
 
@@ -134,6 +144,10 @@ func main() {
 				cli.BoolFlag{
 					Name:  "select, s",
 					Usage: "Show a list of targets to select from",
+				},
+				cli.BoolFlag{
+					Name:  "input, i",
+					Usage: "Type the targets you want to open",
 				},
 				cli.BoolFlag{
 					Name:  "return, r",

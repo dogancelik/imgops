@@ -58,12 +58,43 @@ func getQueryList(s string) []string {
 
 // Create a nice select list
 
-func genSelectText() string {
-	text := "Select a target:\n\n"
+func genSelectText(inputMode bool) string {
+	text := ""
+
+	if inputMode {
+		text += "Available targets:\n\n"
+	} else {
+		text += "Select a target:\n\n"
+	}
+
 	text += "  > [i]mgops\n"
 	for _, target := range availableTargets {
 		text += "  > " + strings.Replace(target.Name, string(target.Key), "["+string(target.Key)+"]", 1) + "\n"
 	}
-	text += "\n(Press ESC to cancel)"
+
+	if inputMode {
+		text += "\nType initials: "
+	} else {
+		text += "\n(Press ESC to cancel)"
+	}
+
 	return text
+}
+
+// Initials to targets with comma
+
+func initialsToTargets(initials string) string {
+	targets := ""
+	m := getKeyToNameTargets(availableTargets)
+
+	for i := range initials {
+		if val, ok := m[rune(initials[i])]; ok {
+			targets += val
+			if len(initials)-1 != i {
+				targets += ","
+			}
+		}
+	}
+
+	return targets
 }
