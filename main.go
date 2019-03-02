@@ -5,11 +5,11 @@ import (
 	"os"
 
 	"github.com/eiannone/keyboard"
-	"github.com/skratchdot/open-golang/open"
+	"github.com/pkg/browser"
 	"github.com/urfave/cli"
 )
 
-import . "github.com/tj/go-debug"
+import . "github.com/visionmedia/go-debug"
 
 var debug = Debug("imgops")
 
@@ -109,7 +109,7 @@ func cliSearch(c *cli.Context) error {
 			if c.Bool("return") {
 				fmt.Println(url)
 			} else {
-				open.Start(url)
+				browser.OpenURL(url)
 			}
 		}
 	}

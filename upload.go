@@ -9,7 +9,7 @@ import (
 	"github.com/parnurzeal/gorequest"
 )
 
-const uploadUrl string = "https://imgops.com/upload/uploadPhoto-action.asp"
+const uploadUrl string = "https://imgops.com/store"
 const uploadSearch string = "userUploadTempCache"
 const defaultTarget = "imgops"
 

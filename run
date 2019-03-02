@@ -2,6 +2,7 @@
 
 export COMMIT_HASH=`git rev-parse --short @`
 export COMMIT_DATE=`git log -1 --pretty=format:%cI | sed -r -e 's/T.*//' -e 's/-//g'`
+export BUILD_DIR="build/"
 
 function PREBUILD {
   go get ./...
@@ -21,7 +22,7 @@ function BUILD {
   VERSION=${VERSION:-${CI_BUILD_TAG:-#${CI_BUILD_REF:0:6}}}
   echo "Version: ${VERSION:-\$VERSION is empty}"
 
-  go build -ldflags "-X main.Version=$VERSION" -o $OUT_FILE
+  go build -ldflags "-X main.Version=$VERSION" -o "$BUILD_DIR$OUT_FILE"
 }
 
 function TEST {
@@ -44,8 +45,21 @@ function BUILDALL {
   done
 }
 
+function ZIP {
+  cd `dirname $1`
+  ZIP_FILE=`basename $1 .exe`.zip
+  ADD_FILE=`basename $1`
+  7za a -tzip $ZIP_FILE $ADD_FILE > /dev/null 2>&1
+  echo SHA1: `sha1sum $ZIP_FILE`
+}
+
+function ZIPALL {
+  export -f ZIP
+  find $BUILD_DIR -iname "*" ! -iname "*.zip" -type f -exec bash -c 'ZIP "$1"' - {} \;
+}
+
 function HELP {
-  echo -e "ImgOps Build Tool\nCommands: prebuild, build, test, buildall, help"
+  echo -e "ImgOps Build Tool\nCommands: prebuild, build, test, buildall, zipall, help"
 }
 
 case $1 in
@@ -57,6 +71,8 @@ case $1 in
     TEST ;;
   buildall)
     BUILDALL ;;
+  zipall)
+    ZIPALL ;;
   *)
     HELP ;;
 esac
