@@ -16,22 +16,4 @@ It supports files and URLs.
 
 ## How To Use
 
-Open up your command prompt:
-
-### Upload a file
-
-Reverse search a local file and open Google & TinEye results:
-
-```batch
-imgops search "C:\my_file.jpg" -t google,tineye
-```
-
-### Pass a URL
-
-Reverse search a URL and open Google results:
-
-```batch
-imgops search "http://example.com/foobar.jpg" -t google
-```
-
-Other available flags: `-s` (select a target from list) and `-r` (output search URL)
+See `imgops -h` or check out [the Wiki](https://github.com/dogancelik/imgops/wiki/Examples).
